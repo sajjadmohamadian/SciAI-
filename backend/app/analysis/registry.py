@@ -1,20 +1,20 @@
-from typing import Type
+from typing import Any, List, Type
 
 from backend.app.analysis.base import AnalysisEngine
 
 
 class AnalysisRegistry:
     """
-    Central registry for SciAI analysis engines.
+    Registry of SciAI analytical engines.
+
+    Each registered engine represents a selected analytical
+    capability, not an entire external package.
     """
 
     def __init__(self) -> None:
         self._engines: dict[str, Type[AnalysisEngine]] = {}
 
     def register(self, engine: Type[AnalysisEngine]) -> None:
-        """
-        Register an analysis engine.
-        """
         if not engine.name:
             raise ValueError("Analysis engine must have a name.")
 
@@ -26,9 +26,6 @@ class AnalysisRegistry:
         self._engines[engine.name] = engine
 
     def get(self, name: str) -> Type[AnalysisEngine]:
-        """
-        Get an analysis engine by name.
-        """
         try:
             return self._engines[name]
         except KeyError:
@@ -36,11 +33,14 @@ class AnalysisRegistry:
                 f"Analysis engine '{name}' is not registered."
             ) from None
 
-    def list(self) -> list[str]:
-        """
-        Return registered analysis engine names.
-        """
+    def list(self) -> List[str]:
         return sorted(self._engines.keys())
+
+    def metadata(self) -> List[dict[str, Any]]:
+        return [
+            engine.metadata()
+            for engine in self._engines.values()
+        ]
 
 
 registry = AnalysisRegistry()
